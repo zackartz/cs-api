@@ -70,6 +70,7 @@ func (s *Server) GetSnippetBySlug(w http.ResponseWriter, r *http.Request) {
 		if snippetGotten.AuthorID != rid {
 			if userGotten.Admin != true {
 				responses.ERROR(w, http.StatusUnauthorized, errors.New("unauthorized"))
+				return
 			}
 		}
 	}

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/zackartz/code-share/api/auth"
 	"github.com/zackartz/code-share/api/models"
 	"github.com/zackartz/code-share/api/responses"
@@ -10,6 +11,10 @@ import (
 	"io/ioutil"
 	"net/http"
 )
+
+type Resp struct {
+	Token string `json:"token"`
+}
 
 func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
@@ -35,7 +40,7 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusUnprocessableEntity, formattedError)
 		return
 	}
-	responses.JSON(w, http.StatusOK, token)
+	responses.JSON(w, http.StatusOK, &Resp{Token: token})
 }
 
 func (s *Server) SignIn(email, password string) (string, error) {
@@ -45,11 +50,11 @@ func (s *Server) SignIn(email, password string) (string, error) {
 
 	err = s.DB.Debug().Model(models.User{}).Where("email = ?", email).Take(&user).Error
 	if err != nil {
-		return "", err
+		return "", errors.New("email")
 	}
 	err = models.VerifyPassword(user.Password, password)
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
-		return "", nil
+		return "", errors.New("hashedPassword")
 	}
 	return auth.CreateToken(user.ID)
 }

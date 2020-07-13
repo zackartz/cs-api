@@ -104,13 +104,28 @@ func (s *Server) GetUser(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-	user := models.User{}
-	userGotten, err := user.FindByID(s.DB, uint32(uid))
+	user := &models.User{}
+	user, err = user.FindByID(s.DB, uint32(uid))
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-	Return(s, userGotten, w, r)
+	Return(s, user, w, r)
+}
+
+func (s *Server) GetSelf(w http.ResponseWriter, r *http.Request) {
+	uid, err := auth.ExtractTokenID(r)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+	user := &models.User{}
+	user, err = user.FindByID(s.DB, uint32(uid))
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+	Return(s, user, w, r)
 }
 
 func (s *Server) UpdateUser(w http.ResponseWriter, r *http.Request) {
